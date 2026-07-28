@@ -209,7 +209,7 @@ sequenceDiagram
 - 👍 이미지 모델 입력이 100% 텍스트라 **API 키와 모델 문자열만 바꾸면 모델 교체 완료**
 - 👎 이미지→텍스트를 경유하므로 **외형의 정확한 재현은 불가** — 레퍼런스는 "분위기·구도·스타일 참조" 수준
 
-> ⚠️ PRD는 이 한계를 첨부 영역에 사전 고지하도록(① 이미지는 Claude가 분석해 프롬프트에 반영하며 외형 정확 재현이 아님 ② 실존 인물 사진은 분석이 거부될 수 있음) 규정했지만, **실제 UI에는 들어가지 않았습니다.** 첨부 영역의 사용자 노출 문구는 이게 전부입니다:
+> ⚠️ 기획 단계에서는 이 한계를 첨부 영역에 사전 고지하기로 했지만(① 이미지는 Claude가 분석해 프롬프트에 반영하며 외형 정확 재현이 아님 ② 실존 인물 사진은 분석이 거부될 수 있음), **실제 UI에는 들어가지 않았습니다.** 첨부 영역의 사용자 노출 문구는 이게 전부입니다:
 > ```
 > 참고 이미지 (선택)
 > 텍스트로도 생성할 수 있지만, 참고 이미지를 넣으면 퀄리티가 훨씬 좋아져요.
@@ -363,7 +363,9 @@ test/                    pytest — 도메인별로 app/ 구조를 그대로 미
 
 ### 4.2 프론트엔드 — `github.com/kxb2/frontend`
 
-Next.js 16 App Router. 페이지는 4개(`/` 입력 · `/storyboard` 결과 · `/export` 내보내기 · `/canvas`)뿐이고, **부피의 대부분은 캔버스**입니다.
+Next.js 16 App Router. 페이지는 3개(`/` 입력 · `/storyboard` 결과 · `/canvas`)뿐이고, **부피의 대부분은 캔버스**입니다.
+
+> **내보내기에는 전용 페이지가 없습니다.** 초기에는 `/export` 페이지에서 클라이언트가 직접 PDF를 만들었지만(`@react-pdf/renderer`), **페이지째 제거되고 백엔드 Export API 호출로 일원화**됐습니다. 현재는 `/storyboard`의 내보내기 드롭다운 → `POST .../exports/{pdf,image}` → `GET /exports/{id}` 폴링 → 다운로드 링크를 새 탭으로 여는 흐름입니다.
 
 ```
 app/
@@ -371,7 +373,6 @@ app/
 ├── storyboard/                  결과 화면 (폴링 · 그리드 표시 · 프롬프트 박스 · 실패 시 전체 재생성)
 │   ├── image/imagesingle.tsx    ⭐ 현행 — 그리드 1장 표시
 │   └── image/imagecell.tsx      ⚰️ per_cut용 컷 셀 (죽은 코드 · §7-5)
-├── export/                      Export 미리보기 + 클라이언트 PDF(@react-pdf/renderer)
 │
 ├── auth/                        ⭐ 인증
 │   ├── tokenStore.ts            accessToken=메모리, refreshToken=local/sessionStorage
@@ -389,9 +390,11 @@ app/
     ├── core/       Workspace(저장·업로드 오케스트레이션) · Canvas(렌더) ·
     │               Toolbar · Minimap · Switcher · useHistory · useViewport
     ├── items/      CanvasItem · MediaItem · MemoItem · SectionItem
-    ├── tools/      connector(곡선·핸들) · memo(편집·리사이즈·색상) · section
+    ├── tools/      connector(곡선·핸들) · memo(편집·제목·리사이즈·색상) · section
     └── transform/  useSelect · useItemResize · useRotate · Overlay · math
 ```
+
+> ⚠️ `@react-pdf/renderer`가 **`package.json`에 남아 있습니다.** `/export` 페이지와 함께 쓰이던 의존성인데 폴더만 지우고 패키지는 그대로라, 지금은 어디서도 import하지 않습니다 — 정리 대상입니다.
 
 **캔버스에서 알아둘 것**
 
@@ -527,8 +530,8 @@ npm run dev
 브랜치 전략: `feature/*` → PR → `develop` (자주) → PR → `main` (배포할 때만). `main`·`develop`은 PR-only 보호 룰셋이 걸려 있습니다.
 
 > [!NOTE]
-> **프론트 `develop`이 `main`보다 앞서 있는 상태로 종료됐습니다.** 프로젝트 마지막 날(07-28)에 반영된 **캔버스 수정분**(메모 제목 수정 · 신규 메모 크기 커스텀 · 휠 클릭 화면 이동 · Shift 수평 이동 · 섹션 인식 버그 · 되돌리기 버그 · macOS Shift+스크롤 이슈)이 `develop`에만 있고 운영(`main`)에는 없습니다.
-> → 인계 후 첫 작업으로 **`develop` → `main` PR을 머지**하면 이 수정분이 운영에 반영됩니다. 그 전까지는 캔버스 최신 상태를 보려면 develop 프리뷰 주소를 쓰세요.
+> **두 레포 모두 `develop`과 `main`이 동기화된 상태로 종료됐습니다.** 프론트는 마지막 날 **배포 4차**(`40f0fcd`)로 캔버스 개선분(메모 제목 편집 · 메모 크기 커스텀 · 휠 클릭 화면 이동 · Shift 수평 이동 · 섹션 인식 · 되돌리기 버그)과 `/export` 페이지 제거까지 운영에 반영됐고, 백엔드는 `b4164c7`이 마지막입니다.
+> → **인계 시점에 따로 머지할 미반영분은 없습니다.** 운영 화면 = `main` = `develop`.
 
 ---
 
@@ -688,7 +691,7 @@ GPT 어댑터가 화면비를 3종(가로/세로/정사각)으로 근사합니�
 <br/>
 
 - **그림체 "그림책" 추가** — 07-27에 추가하기로 논의됐으나 **최종 옵션 개수(3종 vs 4종) 미확정**으로 끝났습니다. 배포본은 **3종**입니다
-- **레퍼런스 이미지 한계 고지 문구 미구현** — PRD F-01이 요구한 안내 2건(외형 정확 재현 아님 / 실존 인물 사진 거부 가능)이 UI에 없습니다(§3.2). 문구 추가만으로 끝나는 작업입니다
+- **레퍼런스 이미지 한계 고지 문구 미구현** — 기획상 넣기로 했던 안내 2건(외형 정확 재현 아님 / 실존 인물 사진 거부 가능)이 UI에 없습니다(§3.2). 문구 추가만으로 끝나는 작업입니다
 - `role`은 `user`만 실제로 존재합니다. admin 가입 경로가 없습니다
 - 이미지·파일 **보존기간 후 삭제**는 정책만 있고 자동화되지 않았습니다
 
@@ -732,10 +735,10 @@ GPT 어댑터가 화면비를 3종(가로/세로/정사각)으로 근사합니�
 
 1. 위 체크리스트의 키 재발급 → **EC2의 `.env` 직접 갱신** + GitHub Actions Secrets 갱신
 2. Supabase가 일시정지 상태면 대시보드에서 Restore
-3. 백엔드 재배포 — `deploy.yml`이 **`main` push에 걸려 있으므로**, `develop` → `main` PR을 머지하면 트리거됩니다
+3. 백엔드 재배포 — `deploy.yml`이 **`main` push에 걸려 있으므로**, `main`으로 향하는 PR을 머지하면 트리거됩니다
    (`main`은 PR-only 보호 룰셋이라 직접 push는 막혀 있을 수 있습니다)
 4. `GET https://kxb2-backend.duckdns.org/health`로 DB 연결까지 확인
-5. **프론트도 `develop` → `main` PR 머지** — 미반영된 캔버스 수정분이 운영에 올라갑니다 (§6 배포 절)
+5. 프론트는 Vercel이 `main`을 보고 있어 **별도 조치 불필요** — 두 레포 모두 `develop`=`main`이라 머지할 미반영분이 없습니다(§6)
 
 ### 9.2 계속 개발한다면 — 우선순위 순
 
@@ -787,8 +790,11 @@ B의 산출물은 **A라인이 쓰는 영상 AI(Seedance 2.0 · Kling 3.0 · Gro
 | **백엔드 작업 메모** | [`backend/docs/BACKEND_MEMO.md`](https://github.com/kxb2/backend/blob/main/docs/BACKEND_MEMO.md) | 기술 선택 근거 · 미결 사항 · ER 스케치 |
 | **컨벤션** | [`backend/docs/CONVENTION.md`](https://github.com/kxb2/backend/blob/main/docs/CONVENTION.md) | 커밋 · 브랜치 · PR 규칙 |
 | **AWS IAM 구성** | [`backend/docs/B2_AWS_IAM.md`](https://github.com/kxb2/backend/blob/main/docs/B2_AWS_IAM.md) | 계정 분리 · 권한 구성 |
-| **PRD v1.9** | 사내 Notion | 기능 명세 · 수용 기준 · 범위 밖 항목 · 리스크 |
-| **회의록** | 사내 Notion | 2026-06-23 ~ 07-28. **이 문서에 적힌 "왜"의 원출처** |
+| **PRD (최종본)** | 🚧 **작성 예정** — 이 레포에 추가 | 기능 명세 · 수용 기준 · 범위 밖 항목 · 리스크 |
+
+> **PRD 최종본은 별도로 작성해 이 레포에 올릴 예정입니다.** 그때까지는 이 문서의 §3~§5(파이프라인·코드 지도·데이터 모델)와 §7(지뢰밭)이 **현재 구현 기준의 가장 정확한 설명**입니다.
+>
+> 개발 기간의 PRD 개정 이력과 회의록은 **인계 범위에 포함되지 않습니다.** 이 문서에 적힌 "왜 이렇게 됐는지"는 그 기록에서 뽑아 옮겨 둔 것이므로, 원본을 따로 찾아볼 필요는 없습니다.
 
 <br/>
 
