@@ -292,7 +292,7 @@ AIAdapterRequestError      → 재시도 X   (400/401 — 콘텐츠 정책 거�
 
 **사용자에게 보이는 동작**
 
-- 실패 시 **입력값 그대로 재생성 버튼 1회** 제공 (자동 재생성 아님 — 의도적으로 하지 않기로 결정)
+- 실패 시 **입력값 그대로 재생성 버튼** 제공 (자동 재생성 아님 — 의도적으로 하지 않기로 결정)
 - 에러 메시지는 반드시 `user_facing_error_message()`를 거칩니다. Anthropic/OpenAI 원본 에러 텍스트가 사용자 화면에 노출되면 안 되기 때문입니다
 
 > **알려진 한계**: 400 계열이 "콘텐츠 정책 거부"인지 "우리 코드가 잘못 보낸 요청"인지 **구분하지 않습니다.** 제공자별 에러 바디를 파싱해야 하는데 시간이 없어 `"시나리오 내용을 순화하거나 잠시 후 다시 시도해 주세요"`라는 **양쪽 다 커버되는 문구**로 처리했습니다. 실사용에서 마주치는 400은 대부분 액션·스릴러 시나리오의 정책 거부입니다.
@@ -370,28 +370,53 @@ Next.js 16 App Router. 페이지는 3개(`/` 입력 · `/storyboard` 결과 · `
 ```
 app/
 ├── page.tsx                     시나리오 입력 화면
-├── storyboard/                  결과 화면 (폴링 · 그리드 표시 · 프롬프트 박스 · 실패 시 전체 재생성)
-│   ├── image/imagesingle.tsx    ⭐ 현행 — 그리드 1장 표시
-│   └── image/imagecell.tsx      ⚰️ per_cut용 컷 셀 (죽은 코드 · §7-5)
+├── storyboard/                  결과 화면
+│   ├── page.tsx                 폴링 · 내보내기 드롭다운 · 실패 시 전체 재생성
+│   ├── ReadStoryboard.tsx       라이브러리에서 들어온 기존 스토리보드를 읽기 전용 표시
+│   ├── image/
+│   │   ├── imagesingle.tsx      ⭐ 현행 — 그리드 1장 표시
+│   │   ├── imagegrid.tsx        ⚰️ per_cut용 9칸 그리드 (죽은 코드 · §7-5)
+│   │   └── imagecell.tsx        ⚰️ per_cut용 컷 셀 — imagegrid에서만 참조 (죽은 코드)
+│   └── promptbox/
+│       └── propmptbox.tsx       통합 프롬프트 박스 (파일명 오타가 실제 경로입니다)
 │
 ├── auth/                        ⭐ 인증
 │   ├── tokenStore.ts            accessToken=메모리, refreshToken=local/sessionStorage
 │   ├── AuthContext.tsx          로그인 상태 · 세션 만료 이벤트 수신
 │   ├── AuthGate.tsx             보호 경로 진입 차단
-│   └── googleIdentity.ts        Google Identity Services (FedCM 대응)
+│   ├── LoginModal.tsx           이메일/구글 로그인 모달
+│   ├── googleIdentity.ts        Google Identity Services (FedCM 대응)
+│   └── protectedPaths.ts        로그인 필요한 경로 목록
 │
 ├── api/
 │   ├── http.ts                  ⭐ authorizedFetch — 401이면 자동 재발급 후 1회 재시도
+│   ├── auth/api.ts              가입·로그인·구글·refresh·logout
 │   ├── storyboard/api.ts        스토리보드·생성·Export (+ 폐지된 컷 재생성 함수 2개)
 │   ├── canvas/api.ts + adapter.ts   서버 스키마 ↔ 캔버스 문서 변환
 │   └── proxy/route.ts           R2 이미지 CORS 우회 (`.r2.dev` 호스트만 허용)
 │
-└── canvas/_components/          ⭐ Konva 캔버스 — 계층이 명확하게 나뉨
-    ├── core/       Workspace(저장·업로드 오케스트레이션) · Canvas(렌더) ·
-    │               Toolbar · Minimap · Switcher · useHistory · useViewport
-    ├── items/      CanvasItem · MediaItem · MemoItem · SectionItem
-    ├── tools/      connector(곡선·핸들) · memo(편집·제목·리사이즈·색상) · section
-    └── transform/  useSelect · useItemResize · useRotate · Overlay · math
+├── components/                  화면 공통
+│   ├── Header.tsx               헤더 · 라이브러리 진입
+│   ├── Library.tsx              좌측 슬라이드 사이드바 (스토리보드/캔버스 목록·제목수정·삭제)
+│   └── FormField.tsx            입력 폼 (시나리오·장르·고급설정·파일 업로드)
+│
+├── data/
+│   ├── storyboardFields.ts      ⭐ 입력 화면의 라벨·장르·이미지모델·그림체 정의
+│   └── mockStoryboardResult.ts  ⚰️ API 연동 전 사용하던 더미 데이터
+│
+├── utils/                       savedAt · lastSelected · syncEvents · time
+├── layout.tsx  globals.css      루트 레이아웃 · 전역 스타일(컬러 토큰)
+│
+└── canvas/                      ⭐ Konva 캔버스 — 부피의 대부분
+    ├── page.tsx                 캔버스 전환·목록·썸네일 캐싱
+    └── _components/
+        ├── core/       Workspace(저장·업로드 오케스트레이션) · Canvas(렌더) ·
+        │               Toolbar · Minimap · Switcher · useHistory · useViewport
+        ├── items/      CanvasItem · MediaItem · MemoItem · SectionItem
+        ├── tools/      connector(곡선·핸들) · memo(편집·제목·리사이즈·색상) · section
+        └── transform/  useSelect · useItemResize · useRotate · Overlay · math
+
+types/                           ai · api · auth · canvas · canvasApi · input · storyboard
 ```
 
 > ⚠️ `@react-pdf/renderer`가 **`package.json`에 남아 있습니다.** `/export` 페이지와 함께 쓰이던 의존성인데 폴더만 지우고 패키지는 그대로라, 지금은 어디서도 import하지 않습니다 — 정리 대상입니다.
@@ -608,11 +633,13 @@ conn.execute(text("ALTER TABLE storyboards ADD COLUMN IF NOT EXISTS ..."))
 
 **컷별 재생성은 제품에 없습니다.** 개발 중반까지 구현했다가 산출 단위를 그리드 이미지 1장으로 바꾸면서 폐지된 기능이고, 코드만 지우지 않고 남아 있습니다(`single_image`에서 호출하면 `400`).
 
-사용자에게 노출되는 "재생성"은 이것이 아니라 **입력값 그대로 전체를 다시 생성**하는 것입니다 — 생성 실패 시 재생성 버튼 1회. 컷을 개별 객체로 다루는 기능(컷별 생성·재생성·부분 수정·컷별 Export·컷별 복사)은 **그리드 1장 구조와 충돌하므로 의도적으로 전부 배제**했습니다.
+사용자에게 노출되는 "재생성"은 이것이 아니라 **입력값 그대로 전체를 다시 생성**하는 것입니다 — 생성 실패 시 노출되는 재생성 버튼. 컷을 개별 객체로 다루는 기능(컷별 생성·재생성·부분 수정·컷별 Export·컷별 복사)은 **그리드 1장 구조와 충돌하므로 의도적으로 전부 배제**했습니다.
 
-**잔해는 프론트에도 있습니다** — `app/storyboard/image/imagecell.tsx`(per_cut용 컷 셀)가 `regenerateCut()`을 실제로 호출합니다. 현행 `single_image` 모드는 `imagesingle.tsx`를 쓰므로 이 경로는 타지 않습니다.
+**잔해는 프론트에도 있습니다** — `imagecell.tsx`(per_cut용 컷 셀)가 `regenerateCut()`을 호출하고, 그 `imagecell`을 `imagegrid.tsx`(9칸 그리드)가 씁니다. **그런데 `imagegrid`를 import하는 곳이 없습니다** — 현행 `page.tsx`는 `imagesingle.tsx`만 쓰므로 이 두 파일은 통째로 도달 불가 코드입니다.
 
-→ 정리 대상: 백엔드 `app/regenerations/` 전체 + `POST /storyboards/{id}/cuts/{cutId}/regeneration` + `GET /regenerations/{id}`, 프론트 `imagecell.tsx`와 `api/storyboard/api.ts`의 `regenerateCut`·`getRegeneration`.
+→ 정리 대상
+> **백엔드** `app/regenerations/` 전체 · `POST /storyboards/{id}/cuts/{cutId}/regeneration` · `GET /regenerations/{id}`
+> **프론트** `image/imagegrid.tsx` · `image/imagecell.tsx` · `api/storyboard/api.ts`의 `regenerateCut`·`getRegeneration`
 
 </details>
 
