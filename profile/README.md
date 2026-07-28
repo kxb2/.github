@@ -76,38 +76,6 @@ _A scenario paragraph in, a 9-panel storyboard and a video-ready prompt out._
 5. **내보내기** — PDF(공유용) 또는 이미지(영상 AI 투입용)
 6. **캔버스** — 레퍼런스·결과물·메모를 자유롭게 배치하는 별도 보드
 
-<!-- ════════════════════════════════════════════════════════════════════
-  📸 스크린샷 자리 — 이미지를 profile/assets/ 에 넣고 아래 블록의 주석을 해제하세요.
-
-  권장 4장 (파일명 그대로 쓰면 수정 없이 바로 렌더됩니다):
-    profile/profile/assets/shot-01-input.png  시나리오 입력 화면
-    profile/profile/assets/shot-02-result.png  3×3 그리드 생성 결과
-    profile/profile/assets/shot-03-prompt.png  통합 영문 프롬프트
-    profile/profile/assets/shot-04-canvas.png  캔버스 워크스페이스
-
-<div align="center">
-<table>
-<tr>
-<td width="50%"><img src="https://raw.githubusercontent.com/kxb2/.github/main/profile/assets/shot-01-input.png" alt="시나리오 입력" /></td>
-<td width="50%"><img src="https://raw.githubusercontent.com/kxb2/.github/main/profile/assets/shot-02-result.png" alt="생성 결과" /></td>
-</tr>
-<tr>
-<td align="center"><sub><b>① 시나리오 + 분위기만 입력</b></sub></td>
-<td align="center"><sub><b>② 3×3 그리드 스토리보드 1장</b></sub></td>
-</tr>
-<tr>
-<td width="50%"><img src="https://raw.githubusercontent.com/kxb2/.github/main/profile/assets/shot-03-prompt.png" alt="통합 프롬프트" /></td>
-<td width="50%"><img src="https://raw.githubusercontent.com/kxb2/.github/main/profile/assets/shot-04-canvas.png" alt="캔버스" /></td>
-</tr>
-<tr>
-<td align="center"><sub><b>③ 영상 AI에 넣는 통합 영문 프롬프트</b></sub></td>
-<td align="center"><sub><b>④ 자유 배치 캔버스</b></sub></td>
-</tr>
-</table>
-</div>
-
-════════════════════════════════════════════════════════════════════ -->
-
 ### 설계상 가장 중요한 결정 3가지
 
 | 결정 | 왜 |
