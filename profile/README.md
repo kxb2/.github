@@ -26,10 +26,10 @@ _A scenario paragraph in, a 9-panel storyboard and a video-ready prompt out._
 > [!IMPORTANT]
 > **이 문서는 인수인계 문서입니다.**
 > 이 프로젝트는 2026년 6월 23일 ~ 7월 29일, 6명이 약 1개월(1인 주 15시간) 동안 만든 MVP이며 **개발 종료와 함께 담당자 전원이 이탈**합니다.
-> 원 담당자에게 물어볼 수 없는 상태를 전제로, **코드만 봐서는 알 수 없는 것**(왜 이렇게 됐는지 · 어디가 지뢰인지 · 다음에 뭘 하면 되는지)을 남기는 것이 이 문서의 목적입니다.
+> 원 담당자에게 물어볼 수 없는 상태를 전제로, **코드만 봐서는 알 수 없는 것**(설계 배경 · 주의가 필요한 지점 · 후속 작업 방향)을 남기는 것이 이 문서의 목적입니다.
 >
 > **읽는 순서 제안**
-> - 처음 인계받았다 → `1. 30초 요약` → `4. 코드 지도` → `7. 지뢰밭` → `8. 인수인계 체크리스트`
+> - 처음 인계받았다 → `1. 30초 요약` → `4. 코드 지도` → `7. 알려진 이슈` → `8. 인수인계 체크리스트`
 > - 당장 돌려봐야 한다 → `6. 로컬 실행` → `8. 인수인계 체크리스트`(⚠️ 키부터 재발급)
 > - 이걸로 뭘 더 할지 정해야 한다 → `1. 30초 요약` → `9. 앞으로의 활용 제안`
 
@@ -45,7 +45,7 @@ _A scenario paragraph in, a 9-panel storyboard and a video-ready prompt out._
 | 4 | [코드 지도](#4-코드-지도) | 어디를 고치면 뭐가 바뀌나 |
 | 5 | [데이터 모델](#5-데이터-모델) | DB와 스토리지에 뭐가 쌓이나 |
 | 6 | [로컬 실행 · 환경변수](#6-로컬-실행--환경변수) | 돌려보는 법 |
-| 7 | [지뢰밭](#7-지뢰밭-반드시-읽을-것) | **모르고 밟으면 터지는 것** |
+| 7 | [알려진 이슈 및 기술 부채](#7-알려진-이슈-및-기술-부채) | **인계 전 반드시 확인** |
 | 8 | [인수인계 체크리스트](#8-인수인계-체크리스트) | 넘겨받아야 할 것 |
 | 9 | [앞으로의 활용 제안](#9-앞으로의-활용-제안) | **이걸로 뭘 할 수 있나** |
 | 10 | [부속 문서 색인](#10-부속-문서-색인) | 더 깊이 볼 곳 |
@@ -241,7 +241,7 @@ sequenceDiagram
 - 그림체는 **Claude에게 맡기지 않고 사용자가 고른 값을 백엔드가 강제**합니다 (`2D 애니메이션` → 내부적으로 `japanese anime`. 안 그러면 미국 카툰풍과 섞임)
 - 재조립 시 **로케이션은 제외하고 조명/스타일만** 각 샷에 붙입니다. 로케이션은 컷마다 다를 수 있어서 전 컷에 반복하면 본문과 충돌하기 때문입니다
 
-### 3.4 격자선 탐지 크롭 — 가장 영리한 부분 ⭐
+### 3.4 격자선 탐지 크롭 ⭐
 
 그리드 이미지 1장을 컷 9장으로 쪼개야 하는데, **정확히 1/3, 2/3 지점을 자르면 안 됩니다.** 이미지 모델이 픽셀 단위로 균일하게 그려주지 않기 때문입니다.
 
@@ -328,7 +328,7 @@ app/
 ├── generations/
 │   ├── service.py               per_cut 경로 (9컷 병렬 생성 → 서버 합성) — 레거시
 │   └── onegrid_service.py       ⭐ single_image 경로 (현행). 격자 크롭이 여기
-├── regenerations/       ⚰️ 폐지된 컷별 재생성의 잔해 — 제품 기능 아님(§7-5)
+├── regenerations/       ※ 폐지된 컷별 재생성 — 현재 미사용(§7-5)
 ├── canvases/            캔버스 조회/저장/첨부 업로드
 ├── exports/             PDF / 이미지 Export (reportlab · zipfile)
 ├── users/               이메일 가입 · 구글 로그인 · JWT · refresh 로테이션
@@ -375,8 +375,8 @@ app/
 │   ├── ReadStoryboard.tsx       라이브러리에서 들어온 기존 스토리보드를 읽기 전용 표시
 │   ├── image/
 │   │   ├── imagesingle.tsx      ⭐ 현행 — 그리드 1장 표시
-│   │   ├── imagegrid.tsx        ⚰️ per_cut용 9칸 그리드 (죽은 코드 · §7-5)
-│   │   └── imagecell.tsx        ⚰️ per_cut용 컷 셀 — imagegrid에서만 참조 (죽은 코드)
+│   │   ├── imagegrid.tsx        ※ per_cut용 9칸 그리드 — 미사용(§7-5)
+│   │   └── imagecell.tsx        ※ per_cut용 컷 셀 — imagegrid에서만 참조, 미사용
 │   └── promptbox/
 │       └── propmptbox.tsx       통합 프롬프트 박스 (파일명 오타가 실제 경로입니다)
 │
@@ -402,7 +402,7 @@ app/
 │
 ├── data/
 │   ├── storyboardFields.ts      ⭐ 입력 화면의 라벨·장르·이미지모델·그림체 정의
-│   └── mockStoryboardResult.ts  ⚰️ API 연동 전 사용하던 더미 데이터
+│   └── mockStoryboardResult.ts  ※ API 연동 전 사용하던 더미 데이터 — 미사용
 │
 ├── utils/                       savedAt · lastSelected · syncEvents · time
 ├── layout.tsx  globals.css      루트 레이아웃 · 전역 스타일(컬러 토큰)
@@ -560,9 +560,9 @@ npm run dev
 
 ---
 
-## 7. 지뢰밭 (반드시 읽을 것)
+## 7. 알려진 이슈 및 기술 부채
 
-> 이 절이 이 문서에서 가장 중요합니다. **모두 의도적으로 감수한 부채**이며, 각각 왜 그랬는지도 함께 적습니다.
+> 아래 항목은 **모두 개발 기간 중 의도적으로 감수한 부채**이며, 각 항목마다 그렇게 판단한 근거를 함께 기재했습니다.
 > 🔴 3건은 펼쳐 두었고, 🟡 9건은 접어 두었습니다 — **제목을 클릭하면 상세가 열립니다.**
 
 <div align="center">
@@ -573,8 +573,8 @@ npm run dev
 | 🔴 | 2 | Alembic 없음 | 스키마 변경이 `main.py`에 하드코딩 |
 | 🔴 | 3 | DB 공유 | **로컬 = 운영** — 로컬 테스트가 운영에 쌓임 |
 | 🟡 | 4 | 생성 경로 2개 | API 기본값(`per_cut`)과 실사용(`single_image`)이 다름 |
-| 🟡 | 5 | `regenerations` | 폐지된 컷별 재생성의 **죽은 코드** |
-| 🟡 | 6 | 정책 거부 재시도 | 프롬프트 단계만 그물이 넓어 **비용 3배** |
+| 🟡 | 5 | `regenerations` | 폐지된 컷별 재생성의 **미사용 기능** |
+| 🟡 | 6 | 정책 거부 재시도 | 프롬프트 단계의 예외 처리 범위가 넓어 **호출 3배** |
 | 🟡 | 7 | rate limit | 인메모리 — 워커 2개면 무력화 |
 | 🟡 | 8 | Supabase | 7일 무요청 시 자동 일시정지 |
 | 🟡 | 9 | 이탈 시 저장 실패 | 콘솔 로그만 — **수용된 리스크** |
@@ -584,7 +584,7 @@ npm run dev
 
 </div>
 
-### 🔴 인계 직후 처리할 것
+### 🔴 우선 조치 항목
 
 **1. 키는 레포에 없습니다. 다만 이탈하는 인원 전원이 유효한 키를 갖고 있습니다**
 두 레포 모두 **전체 히스토리에 `.env`나 키 파일이 커밋된 적이 없고**, `.gitignore`도 처음부터 정상입니다(`backend: .env` / `frontend: .env*`). Public 레포를 통한 유출 경로는 없습니다.
@@ -599,15 +599,15 @@ Base.metadata.create_all(bind=engine)
 conn.execute(text("ALTER TABLE storyboards ADD COLUMN IF NOT EXISTS ..."))
 ```
 `create_all()`은 **기존 테이블에 컬럼을 추가해주지 않아서**, 임시방편으로 기동 시마다 `ALTER TABLE ... IF NOT EXISTS`를 직접 실행합니다. 개발 마감에 쫓겨 Alembic 도입을 미룬 결과입니다.
-→ **이어서 개발한다면 가장 먼저 걷어내야 할 부채입니다.** 도입 시 실제 DB와 `models.py`가 정확히 일치해야 깨끗하게 시작할 수 있습니다.
+→ **이어서 개발한다면 가장 먼저 해소해야 할 부채입니다.** 도입 시 실제 DB와 `models.py`가 정확히 일치해야 깨끗하게 시작할 수 있습니다.
 
 **3. 로컬 개발 DB와 배포 DB가 같습니다**
 분리하지 않기로 결정했습니다(MVP 기간 한정). 로컬에서 테스트하면 **운영 데이터에 그대로 쌓입니다.**
 
-### 🟡 알고 있어야 할 것
+### 🟡 인지 필요 항목
 
 <details>
-<summary><b>4. 생성 경로가 2개 공존합니다 — <code>per_cut</code>은 죽은 코드에 가깝습니다</b></summary>
+<summary><b>4. 생성 경로가 2개 공존합니다 — <code>per_cut</code>은 사실상 미사용 경로입니다</b></summary>
 
 <br/>
 
@@ -627,7 +627,7 @@ conn.execute(text("ALTER TABLE storyboards ADD COLUMN IF NOT EXISTS ..."))
 </details>
 
 <details>
-<summary><b>5. <code>regenerations</code> 모듈 = 폐지된 기능의 잔해입니다 (죽은 코드)</b></summary>
+<summary><b>5. <code>regenerations</code> 모듈 — 폐지된 컷별 재생성의 미사용 기능</b></summary>
 
 <br/>
 
@@ -648,7 +648,7 @@ conn.execute(text("ALTER TABLE storyboards ADD COLUMN IF NOT EXISTS ..."))
 
 <br/>
 
-"재시도해도 소용없는 에러는 재시도하지 않는다"가 이 프로젝트의 원칙이고, **이미지 생성 단계는 그대로 지켜집니다**(`call_with_retry`의 `RETRYABLE_ERRORS`가 `AIAdapterRequestError`를 제외). 그런데 **프롬프트 생성 단계만 그물이 넓습니다.**
+"재시도해도 소용없는 에러는 재시도하지 않는다"가 이 프로젝트의 원칙이고, **이미지 생성 단계는 그대로 지켜집니다**(`call_with_retry`의 `RETRYABLE_ERRORS`가 `AIAdapterRequestError`를 제외). 그런데 **프롬프트 생성 단계는 예외 처리 범위가 이보다 넓습니다.**
 
 ```python
 # onegrid_service.py — _generate_onegrid_prompt()
@@ -659,7 +659,7 @@ except (AIAdapterError, PromptValidationError) as exc:   # ← AIAdapterRequestE
 
 - **결과는 틀리지 않습니다** — 3회 모두 실패한 뒤 동일한 안내가 나갑니다
 - 다만 **거부가 확정된 요청에 Claude 호출을 3배 쓰고, 사용자 대기 시간도 3배**가 됩니다
-- 실존 인물 사진 첨부나 액션·스릴러 시나리오처럼 **정책 거부가 잦은 입력에서 비용이 눈에 띄게 샙니다**
+- 실존 인물 사진 첨부나 액션·스릴러 시나리오처럼 **정책 거부가 잦은 입력에서 비용 손실이 누적됩니다**
 
 → `except (AIAdapterTimeoutError, AIAdapterUnavailableError, PromptValidationError)`로 좁히면 끝나는 **한 줄짜리 수정**입니다. 상세는 §3.5.
 
@@ -819,7 +819,7 @@ B의 산출물은 **A라인이 쓰는 영상 AI(Seedance 2.0 · Kling 3.0 · Gro
 | **AWS IAM 구성** | [`backend/docs/B2_AWS_IAM.md`](https://github.com/kxb2/backend/blob/main/docs/B2_AWS_IAM.md) | 계정 분리 · 권한 구성 |
 | **PRD (최종본)** | 🚧 **작성 예정** — 이 레포에 추가 | 기능 명세 · 수용 기준 · 범위 밖 항목 · 리스크 |
 
-> **PRD 최종본은 별도로 작성해 이 레포에 올릴 예정입니다.** 그때까지는 이 문서의 §3~§5(파이프라인·코드 지도·데이터 모델)와 §7(지뢰밭)이 **현재 구현 기준의 가장 정확한 설명**입니다.
+> **PRD 최종본은 별도로 작성해 이 레포에 올릴 예정입니다.** 그때까지는 이 문서의 §3~§5(파이프라인·코드 지도·데이터 모델)와 §7(알려진 이슈)이 **현재 구현 기준의 가장 정확한 설명**입니다.
 >
 > 개발 기간의 PRD 개정 이력과 회의록은 **인계 범위에 포함되지 않습니다.** 이 문서에 적힌 "왜 이렇게 됐는지"는 그 기록에서 뽑아 옮겨 둔 것이므로, 원본을 따로 찾아볼 필요는 없습니다.
 
